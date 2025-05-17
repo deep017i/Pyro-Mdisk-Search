@@ -13,12 +13,6 @@ class Config(object):
     AUTH_CHANNELS = list(map(int, os.environ.get("AUTH_CHANNEL", "-1002421861644").split())) # Add Multiple channel id
     DATABASE_URL = os.environ.get("DATABASE_URL",  "mongodb+srv://starcinebot:mkooaa@werdeveloper.vxfam.mongodb.net/?retryWrites=true&w=majority&appName=werdeveloper")
     AUTO_DELETE = int(os.environ.get("AUTO_DELETE", "300")) # 5 min
-    REQUEST_CHNL = os.environ.get("REQUEST_CHNL", "-1002147456374")
-    
-    SHORTNER_API = os.environ.get("SHORTNER_API", "5647ba1ab17ab7ea0df9460126c77af385db887a")
-    SHORTNER_URL = os.environ.get("SHORTNER_URL", "linkshortify.com")
-    IS_VERIFY = os.environ.get("VERIFY", "True") == "True"
-    VERIFIED_HOUR = int(os.environ.get("VERIFIED_HOUR", "24")) # 24 Hour
 
 
     # Texts................
