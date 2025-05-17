@@ -9,19 +9,6 @@ from extraa import verify_user, check_token
 
 @Client.on_message(filters.private & filters.command("start"))
 async def start_handler(client: Client, event: Message):
-
-    # data = event.command[1]
-    # if data.split("-", 1)[0] == "verify":
-    #     userid = data.split("-", 2)[1]
-    #     token = data.split("-", 3)[2]
-    #     if str(event.from_user.id) != str(userid):return await event.reply_text(text="<b>Invalid link or Expired link !</b>",protect_content=True)
-    #     is_valid = await check_token(client, userid, token)
-    #     if is_valid == True:
-    #         await event.reply_text(text=f"<b>👋 {event.from_user.mention},\n\n🎉 Verification Successful! 🎉\n\n<blockquote>⏰ You now have unlimited access for the next 24 hours.</blockquote></b>",protect_content=True)
-    #         await verify_user(client, userid, token)
-    #     else:
-    #         return await event.reply_text(text="<b>Invalid link or Expired link !</b>",protect_content=True)
-
     if await data.get_user(event.from_user.id) is None:
         await data.addUser(event.from_user.id, event.from_user.first_name)
     if Config.IS_FSUB and not await get_fsub(client, event):return
