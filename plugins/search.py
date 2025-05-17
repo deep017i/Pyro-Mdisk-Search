@@ -63,18 +63,18 @@ async def inline_handlers(client, event: Message):
             await q.delete()
             return
         
-        if Config.IS_VERIFY:
-            dy = await client.get_me()
-            if not await check_verification(client, event.from_user.id):
-                await event.reply_text(
-                    text=f"<b>👋 {event.from_user.mention},\n\n⚠️ You are not verified today.\nPlease click on the below verification link button to get unlimited access for the next 24 hours.</b>",
-                    protect_content=True,
-                    reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("• Verify Yourself •", url=await get_token(client, event.from_user.id, f"https://telegram.me/{dy.username}?start="))],
-                        [InlineKeyboardButton("❓ How to Verify", callback_data="send_tutorial")]
-                        ])
-                    )
-                return
+        # if Config.IS_VERIFY:
+        #     dy = await client.get_me()
+        #     if not await check_verification(client, event.from_user.id):
+        #         await event.reply_text(
+        #             text=f"<b>👋 {event.from_user.mention},\n\n⚠️ You are not verified today.\nPlease click on the below verification link button to get unlimited access for the next 24 hours.</b>",
+        #             protect_content=True,
+        #             reply_markup=InlineKeyboardMarkup([
+        #                 [InlineKeyboardButton("• Verify Yourself •", url=await get_token(client, event.from_user.id, f"https://telegram.me/{dy.username}?start="))],
+        #                 [InlineKeyboardButton("❓ How to Verify", callback_data="send_tutorial")]
+        #                 ])
+        #             )
+        #         return
         try:
             msg = await event.reply_text(
                 answers,
