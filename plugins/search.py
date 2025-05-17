@@ -49,19 +49,18 @@ async def inline_handlers(client, event: Message):
 
         if not found_results:
             google = f"https://www.google.com/search?q={event.text}+movie"
-            await event.client.send_message(
-                Config.REQUEST_CHNL,
-                f"<b>🎬 New Movie Request by {event.from_user.mention} ({event.from_user.id})</b>\n\n"
-                f"<b>Movie Name: <code>{event.text}</code></b>\n"
-                "<b><blockquote>Please add this movie to the database.</blockquote></b>")
             q = await event.reply_text(
-                "<b><blockquote>✅ Request Sent to Admin Dashboard Successfully!</blockquote></b>\n\n"
-                "<b>You can also check the correct name from google</b>",
+                f"<b><blockquote>No results found for: {event.text}</blockquote></b>\n\n"
+                "<b>It seems this movie isn't in my database yet. This could be due to an incorrect name, or the movie hasn't been released or added by the admin.</b>\n\n"
+                "🔎 <i>You can use Google to check the correct movie name and try searching again:</i>",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔍 Check Correct Name", url=google)]]))
+                    [InlineKeyboardButton("🔍 Google", url=google)]
+                ])
+            )
             await asyncio.sleep(Config.AUTO_DELETE)
             await q.delete()
             return
+
         
         # if Config.IS_VERIFY:
         #     dy = await client.get_me()
