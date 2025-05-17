@@ -39,7 +39,7 @@ async def button(client, cmd: CallbackQuery):
         
     elif data == "send_tutorial":
         i = await client.copy_message(
-            chat_id=data.message.chat.id,
+            chat_id=cmd.from_user.id,
             from_chat_id=-1002147456374,
             message_id=104,
             caption="<b>✅ Wᴀᴛᴄʜ ᴛʜɪs ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ ᴛᴏ ᴠᴇʀɪғʏ ʏᴏᴜʀsᴇʟғ...\n\n<blockquote>Yᴏᴜ ᴄᴀɴ ᴀʟsᴏ ʙᴜʏ ᴀ ᴏɴᴇ ᴍᴏɴᴛʜ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀsʜɪᴘ ᴀᴛ ᴛʜᴇ ᴄʜᴇᴀᴘᴇsᴛ ᴘʀɪᴄᴇ ᴛᴏ sᴋɪᴘ ᴛʜᴇ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴘʀᴏᴄᴇss.</blockquote></b>")
