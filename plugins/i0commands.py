@@ -25,7 +25,7 @@ async def start_handler(client, event: Message):
     if await data.get_user(event.from_user.id) is None:
         await data.addUser(event.from_user.id, event.from_user.first_name)
     if Config.IS_FSUB and not await get_fsub(client, event):return
-    await event.reply_text(
+    await event.reply(
         text=Config.HOME_TEXT.format(event.from_user.mention),
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("• Updates Channel •", url="https://telegram.me/DypixxTech")],
