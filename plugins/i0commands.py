@@ -8,7 +8,7 @@ import asyncio
 from extraa import verify_user, check_token
 
 @Client.on_message(filters.private & filters.command("start"))
-async def start_handler(client, event: Message):
+async def start_handler(client: Client, event: Message):
 
     data = event.command[1]
     if data.split("-", 1)[0] == "verify":
