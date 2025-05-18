@@ -10,7 +10,7 @@ import time
 
 @Client.on_message(filters.private & filters.command("start"))
 async def start_handler(client: Client, event: Message):
-    if (ban_info := await data.is_banned(message.from_user.id)):return await message.reply(f"You are banned to use me. Reason: {ban_info.get('reason', 'No reason provided') if isinstance(ban_info, dict) else 'No reason provided'}")
+    # if (ban_info := await data.is_banned(message.from_user.id)):return await message.reply(f"You are banned to use me. Reason: {ban_info.get('reason', 'No reason provided') if isinstance(ban_info, dict) else 'No reason provided'}")
     if await data.get_user(event.from_user.id) is None:
         await data.addUser(event.from_user.id, event.from_user.first_name)
     if Config.IS_FSUB and not await get_fsub(client, event):return
@@ -54,7 +54,7 @@ async def broadcasting_func(client : Client, message: Message):
     await msg.edit(f"Successfully Broadcasted\nTotal : {len(users_list)} \nCompleted : {completed} \nFailed : {failed}")
 
 
-@Client.on_message(filters.command(["ban"]) & filters.user(Config.BOT_OWNER))
+@Client.on_message(filters.command("ban") & filters.user(Config.BOT_OWNER))
 async def ban_user_handler(client, message: Message):
     if len(message.command) < 2:
         await message.reply("Ban command ka use: /ban user_id [reason]")
@@ -69,7 +69,7 @@ async def ban_user_handler(client, message: Message):
     except Exception as e:
         await message.reply(f"Ban karte waqt error: {e}")
 
-@Client.on_message(filters.command(["unban"]) & filters.user(Config.BOT_OWNER))
+@Client.on_message(filters.command("unban") & filters.user(Config.BOT_OWNER))
 async def unban_user_handler(client, message: Message):
     if len(message.command) < 2:
         await message.reply("Unban command ka use: /unban user_id")
@@ -83,7 +83,7 @@ async def unban_user_handler(client, message: Message):
     except Exception as e:
         await message.reply(f"Unban karte waqt error: {e}")
 
-@Client.on_message(filters.command(["banlist"]) & filters.user(Config.BOT_OWNER))
+@Client.on_message(filters.command("banlist") & filters.user(Config.BOT_OWNER))
 async def banlist_handler(client, message: Message):
     banlist = await data.get_banlist()
     if not banlist:
