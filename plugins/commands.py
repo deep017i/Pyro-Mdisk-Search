@@ -7,7 +7,6 @@ from .database import data
 import asyncio
 import re
 import time
-from extraa import verify_user, check_token
 
 @Client.on_message(filters.private | filters.group)
 async def ban_check_handler(client: Client, message: Message):
