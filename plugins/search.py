@@ -6,7 +6,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from .Fsub import get_fsub
 import asyncio
 import os
-from extraa import check_verification, get_token
+from .database import data
 
 User = Client(
     Config.BOT_SESSION_NAME,
@@ -15,11 +15,11 @@ User = Client(
     session_string=Config.USER_SESSION_STRING
 )
 
-
 @Client.on_message(filters.text & (filters.private | filters.group))
 async def inline_handlers(client, event: Message):
     if Config.IS_FSUB and not await get_fsub(client, event):return
-    if event.text.startswith('/'):return
+    if event.text.startswith('/'):
+        return
     try:
         s = await event.reply_text(
             f"**🔍 Searching for:** {event.text}", disable_web_page_preview=True
@@ -60,34 +60,54 @@ async def inline_handlers(client, event: Message):
             await asyncio.sleep(Config.AUTO_DELETE)
             await q.delete()
             return
-        try:
-            msg = await event.reply_text(
-                answers,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton(
-                        "⏰ Auto deletes in 5 mins", callback_data="delete_msg")]
-                ])
-            )
-            await asyncio.sleep(Config.AUTO_DELETE)
-            await msg.delete()
 
-        except MessageTooLong:
-            file_path = f"{event.text.strip()}.txt"
-            with open(file_path, "w", encoding="utf-8") as file:
-                file.write(answers)
+        # Promo button logic
+        promo = await data.get_active_promo()
+        if promo:
+            promo_buttons = [
+                [InlineKeyboardButton(f"[AD] {promo['button_text']}", callback_data=f"promo_{promo['reply_msg_id']}")]
+            ]
+            try:
+                msg = await event.reply_text(
+                    answers,
+                    disable_web_page_preview=True,
+                    reply_markup=InlineKeyboardMarkup(promo_buttons)
+                )
+                await asyncio.sleep(Config.AUTO_DELETE)
+                await msg.delete()
 
-            msg = await event.reply_document(
-                file_path,
-                caption=f"Showing the Search result for **{event.text.strip()}**",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton(
-                        "⏰ Auto deletes in 5 mins", callback_data="delete_msg")]
-                ])
-            )
-            os.remove(file_path)
-            await asyncio.sleep(Config.AUTO_DELETE)
-            await msg.delete()
+            except MessageTooLong:
+                file_path = f"{event.text.strip()}.txt"
+                with open(file_path, "w", encoding="utf-8") as file:
+                    file.write(answers)
+
+                msg = await event.reply_document(
+                    file_path,
+                    caption=f"Showing the Search result for **{event.text.strip()}**",
+                    reply_markup=InlineKeyboardMarkup(promo_buttons)
+                )
+                os.remove(file_path)
+                await asyncio.sleep(Config.AUTO_DELETE)
+                await msg.delete()
+        else:
+            try:
+                msg = await event.reply_text(
+                    answers,
+                    disable_web_page_preview=True
+                )
+                await asyncio.sleep(Config.AUTO_DELETE)
+                await msg.delete()
+            except MessageTooLong:
+                file_path = f"{event.text.strip()}.txt"
+                with open(file_path, "w", encoding="utf-8") as file:
+                    file.write(answers)
+                msg = await event.reply_document(
+                    file_path,
+                    caption=f"Showing the Search result for **{event.text.strip()}**"
+                )
+                os.remove(file_path)
+                await asyncio.sleep(Config.AUTO_DELETE)
+                await msg.delete()
 
     except Exception as e:
         await client.send_message(
@@ -97,3 +117,33 @@ async def inline_handlers(client, event: Message):
         g = await event.reply_text("**❌ No Results Found**", disable_web_page_preview=True)
         await asyncio.sleep(30)
         await g.delete()
+
+# Promo callback handler
+@Client.on_callback_query(filters.regex(r"^promo_"))
+async def promo_callback_handler(client, callback_query):
+    try:
+        promo = await data.get_active_promo()
+        if not promo:
+            await callback_query.answer("Promo expired.", show_alert=True)
+            return
+        if f"promo_{promo['reply_msg_id']}" != callback_query.data:
+            await callback_query.answer("Promo expired.", show_alert=True)
+            return
+        await callback_query.answer()
+        user_id = callback_query.from_user.id
+        try:
+            dm_msg = await client.send_message(
+                chat_id=user_id,
+                text=f"{promo['promo_text']}\n\n<b>This msg will be deleted in 5 min.</b>",
+                parse_mode="html"
+            )
+            await client.send_message(
+                chat_id=user_id,
+                text="This msg will be delete in 5 min."
+            )
+            await asyncio.sleep(300)
+            await dm_msg.delete()
+        except Exception as e:
+            await callback_query.answer("Unable to send promo in DM. Please start the bot in private.", show_alert=True)
+    except Exception as e:
+        await callback_query.answer("Error showing promo.", show_alert=True)

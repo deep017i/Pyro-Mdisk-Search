@@ -5,7 +5,17 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from .Fsub import get_fsub
 from .database import data
 import asyncio
+import re
+import time
 from extraa import verify_user, check_token
+
+@Client.on_message(filters.private | filters.group)
+async def ban_check_handler(client: Client, message: Message):
+    ban_info = await data.is_banned(message.from_user.id)
+    if ban_info:
+        reason = ban_info.get("reason", "No reason provided") if isinstance(ban_info, dict) else "No reason provided"
+        await message.reply(f"You are banned to use me. Reason: {reason}")
+        return
 
 @Client.on_message(filters.private & filters.command("start"))
 async def start_handler(client: Client, event: Message):
@@ -50,3 +60,76 @@ async def broadcasting_func(client : Client, message: Message):
             failed += 1
             pass
     await msg.edit(f"Successfully Broadcasted\nTotal : {len(users_list)} \nCompleted : {completed} \nFailed : {failed}")
+
+
+@Client.on_message(filters.command(["ban"]) & filters.user(Config.BOT_OWNER))
+async def ban_user_handler(client, message: Message):
+    if len(message.command) < 2:
+        await message.reply("Ban command ka use: /ban user_id [reason]")
+        return
+    try:
+        user_id = int(message.command[1])
+        reason = " ".join(message.command[2:]) if len(message.command) > 2 else "No reason"
+        if await data.ban_user(user_id, reason):
+            await message.reply(f"User {user_id} ban ho gaya. Reason: {reason}")
+        else:
+            await message.reply(f"User {user_id} pehle se ban hai ya error aayi.")
+    except Exception as e:
+        await message.reply(f"Ban karte waqt error: {e}")
+
+@Client.on_message(filters.command(["unban"]) & filters.user(Config.BOT_OWNER))
+async def unban_user_handler(client, message: Message):
+    if len(message.command) < 2:
+        await message.reply("Unban command ka use: /unban user_id")
+        return
+    try:
+        user_id = int(message.command[1])
+        if await data.unban_user(user_id):
+            await message.reply(f"User {user_id} unban ho gaya.")
+        else:
+            await message.reply(f"User {user_id} ban list me nahi tha ya error aayi.")
+    except Exception as e:
+        await message.reply(f"Unban karte waqt error: {e}")
+
+@Client.on_message(filters.command(["banlist"]) & filters.user(Config.BOT_OWNER))
+async def banlist_handler(client, message: Message):
+    banlist = await data.get_banlist()
+    if not banlist:
+        await message.reply("Koi bhi user ban nahi hai.")
+        return
+    text = "<b>Ban List:</b>\n"
+    for user in banlist:
+        text += f"<code>{user['user_id']}</code> - {user.get('reason','No reason')}\n"
+    await message.reply(text, parse_mode="html")
+
+@Client.on_message(filters.command("addpromo") & filters.user(Config.BOT_OWNER))
+async def add_promo_handler(client, message):
+    if not message.reply_to_message or not message.reply_to_message.text:
+        await message.reply("Reply to a text message to add promo.")
+        return
+    args = message.text.split(maxsplit=2)
+    if len(args) < 3:
+        await message.reply("Usage: /addpromo [Button Text] [Duration, e.g. 2d or 5h]")
+        return
+    button_text = args[1]
+    duration_arg = args[2].strip().lower()
+    duration_seconds = 0
+    match = re.match(r"(\d+)([dh])", duration_arg)
+    if match:
+        num = int(match.group(1))
+        unit = match.group(2)
+        if unit == "d":
+            duration_seconds = num * 86400
+        elif unit == "h":
+            duration_seconds = num * 3600
+    if duration_seconds == 0:
+        await message.reply("Invalid duration. Use d for days, h for hours. Example: 2d or 5h")
+        return
+    promo_text = message.reply_to_message.text
+    reply_msg_id = message.reply_to_message.id
+    promo = await data.add_promo(button_text, reply_msg_id, promo_text, duration_seconds)
+    if promo:
+        expire_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(promo['expire_at']))
+        await message.reply(f"Promo added!\nButton: {button_text}\nExpires at: {expire_time}")
+    else:
+        await message.reply("Failed to add promo.")
