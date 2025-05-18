@@ -8,16 +8,9 @@ import asyncio
 import re
 import time
 
-@Client.on_message(filters.private | filters.group)
-async def ban_check_handler(client: Client, message: Message):
-    ban_info = await data.is_banned(message.from_user.id)
-    if ban_info:
-        reason = ban_info.get("reason", "No reason provided") if isinstance(ban_info, dict) else "No reason provided"
-        await message.reply(f"You are banned to use me. Reason: {reason}")
-        return
-
 @Client.on_message(filters.private & filters.command("start"))
 async def start_handler(client: Client, event: Message):
+    if (ban_info := await data.is_banned(message.from_user.id)):return await message.reply(f"You are banned to use me. Reason: {ban_info.get('reason', 'No reason provided') if isinstance(ban_info, dict) else 'No reason provided'}")
     if await data.get_user(event.from_user.id) is None:
         await data.addUser(event.from_user.id, event.from_user.first_name)
     if Config.IS_FSUB and not await get_fsub(client, event):return
